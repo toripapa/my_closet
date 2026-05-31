@@ -9,6 +9,12 @@ class AppColors {
   static const Color hover = Color(0xFFF5F5F5);
   static const Color primary = Color(0xFF000000);
   static const Color error = Color(0xFFE53935);
+
+  // 메뉴 영역 다크 테마 색상
+  static const Color menuBackground = Color(0xFF1A1A2E); // 다크 네이비 배경
+  static const Color menuText = Color(0xFFE0E0E0); // 밝은 회색 텍스트
+  static const Color menuSelected = Color(0xFF2D2D44); // 선택 항목 강조 배경
+  static const Color menuHover = Color(0xFF252540); // 호버 배경
 }
 
 class AppSpacing {
