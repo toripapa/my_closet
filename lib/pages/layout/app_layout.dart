@@ -7,14 +7,65 @@ import '../../theme/app_theme.dart';
 
 // [Harness] 3. 미완성 텍스트 남기지 않고 온전한 위젯 구성 완결
 
+/// 현재 URL에서 1단계 메뉴 키를 추론합니다.
+/// 예) /home/weather/today → 'weather', /home/avatar → 'avatar'
+String? _resolveMenuKey(String location) {
+  const prefixMap = {
+    '/home/dashboard': 'home',
+    '/home/avatar': 'avatar',
+    '/home/wardrobe': 'wardrobe',
+    '/home/house': 'house',
+    '/home/weather': 'weather',
+    '/home/community': 'community',
+    '/home/settings': 'settings',
+  };
+  for (final entry in prefixMap.entries) {
+    if (location.startsWith(entry.key)) return entry.value;
+  }
+  if (location == '/home' || location == '/home/') return 'home';
+  return null;
+}
+
 /// 3단 전역 레이아웃: 상단 메뉴바 + 좌측 서브메뉴 + 본문 콘텐츠
-class AppLayout extends ConsumerWidget {
+///
+/// ConsumerStatefulWidget을 사용하여 URL 변경 시 selectedMenuProvider를
+/// didChangeDependencies에서 안전하게 동기화합니다.
+/// (ConsumerWidget의 build 내 addPostFrameCallback 방식은 레이스 컨디션 유발)
+class AppLayout extends ConsumerStatefulWidget {
   final Widget child;
   const AppLayout({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 서브메뉴 유무에 따라 VerticalDivider 조건부 렌더링
+  ConsumerState<AppLayout> createState() => _AppLayoutState();
+}
+
+class _AppLayoutState extends ConsumerState<AppLayout> {
+  /// 마지막으로 동기화된 URL — 중복 동기화 방지용
+  String? _lastSyncedLocation;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // GoRouterState가 변경(URL 변경)될 때만 호출됨
+    final location = GoRouterState.of(context).uri.toString();
+
+    // 같은 위치면 이미 동기화됨 — 중복 처리 방지
+    if (location == _lastSyncedLocation) return;
+    _lastSyncedLocation = location;
+
+    final resolvedKey = _resolveMenuKey(location);
+    if (resolvedKey == null) return;
+
+    // selectedMenuProvider와 불일치할 때만 동기화
+    // (대부분의 경우 메뉴 버튼 클릭 시 이미 select()가 호출되어 일치함 → 노옵)
+    final currentMenu = ref.read(selectedMenuProvider);
+    if (resolvedKey != currentMenu) {
+      ref.read(selectedMenuProvider.notifier).select(resolvedKey);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final submenu = ref.watch(submenuProvider);
     final hasSubmenu = submenu != null && submenu.isNotEmpty;
 
@@ -27,15 +78,15 @@ class AppLayout extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SideMenuPanel(),
-          // 서브메뉴가 있을 때만 구분선 표시
+          // 서브메뉴가 있을 때만 우측 구분선 표시
           if (hasSubmenu)
             const VerticalDivider(
               width: 1,
               thickness: 1,
-              color: AppColors.menuSelected,
+              color: AppColors.menuBorder,
             ),
           Expanded(
-            child: Container(color: AppColors.background, child: child),
+            child: Container(color: AppColors.background, child: widget.child),
           ),
         ],
       ),
@@ -52,12 +103,15 @@ class TopMenuBar extends ConsumerWidget {
     final selectedMenu = ref.watch(selectedMenuProvider);
 
     return AppBar(
-      // 다크 배경 적용 (task 2.2, 2.3)
       backgroundColor: AppColors.menuBackground,
       foregroundColor: AppColors.menuText,
       elevation: 0,
       titleSpacing: 0,
-      // 메뉴 버튼을 title Row 내 타이틀 옆(좌측)에 배치 (task 2.1)
+      // AppBar 하단 구분선 — TopMenuBar와 본문 영역의 경계 명확화
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.menuBorder),
+      ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -129,7 +183,6 @@ class TopMenuBar extends ConsumerWidget {
           ),
         ],
       ),
-      // 로그아웃 버튼은 우측 actions에 유지 (task 2.5)
       actions: [
         IconButton(
           icon: const Icon(Icons.logout, color: AppColors.menuText),
@@ -144,10 +197,6 @@ class TopMenuBar extends ConsumerWidget {
     );
   }
 
-  /// 1단계 메뉴 버튼 빌더
-  /// - 선택 시: menuSelected 배경 + 흰색 텍스트 (task 2.4)
-  /// - 미선택 시: 투명 배경 + menuText 텍스트
-  /// - 단독 메뉴(서브메뉴 없음)도 동일하게 defaultRoute로 즉시 이동 (task 4.1)
   Widget _buildNavBtn(
     BuildContext context,
     WidgetRef ref,
@@ -169,7 +218,6 @@ class TopMenuBar extends ConsumerWidget {
               vertical: AppSpacing.s1,
             ),
           ).copyWith(
-            // 호버 색상을 다크 테마에 맞게 교체 (task 2.4)
             overlayColor: WidgetStateProperty.resolveWith(
               (states) => states.contains(WidgetState.hovered)
                   ? AppColors.menuHover
@@ -177,9 +225,7 @@ class TopMenuBar extends ConsumerWidget {
             ),
           ),
       onPressed: () {
-        // selectedMenuProvider 업데이트 → submenuProvider 자동 갱신 (task 4.2)
         ref.read(selectedMenuProvider.notifier).select(id);
-        // 단독 메뉴든 서브메뉴 있는 메뉴든 항상 defaultRoute로 이동
         context.go(defaultRoute);
       },
       child: Text(label),
@@ -188,7 +234,7 @@ class TopMenuBar extends ConsumerWidget {
 }
 
 /// 좌측 서브메뉴 패널: 선택된 1단계 메뉴에 따라 동적 표시
-/// submenu가 null이면 SizedBox.shrink()로 숨김 (task 4.2)
+/// submenu가 null이면 SizedBox.shrink()로 숨김
 class SideMenuPanel extends ConsumerWidget {
   const SideMenuPanel({super.key});
 
@@ -202,28 +248,27 @@ class SideMenuPanel extends ConsumerWidget {
 
     return Container(
       width: 200,
-      // 다크 배경 적용 (task 3.1)
-      color: AppColors.menuBackground,
+      // SideMenuPanel 전용 배경색 — TopMenuBar와 시각적으로 구분
+      color: AppColors.sideBackground,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s1),
         itemCount: submenu.length,
         itemBuilder: (context, index) {
           final item = submenu[index];
           return ListTile(
-            // 다크 테마 텍스트 색상 (task 3.2)
             title: Text(
               item.label,
               style: const TextStyle(color: AppColors.menuText, fontSize: 14),
             ),
-            // 다크 테마 호버 색상 (task 3.3)
             hoverColor: AppColors.menuHover,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.s2,
             ),
             dense: true,
             onTap: () {
+              // item.route는 전체 경로(/home/weather/today) — 직접 go() 호출
               if (item.route != null) {
-                context.go('/home${item.route}');
+                context.go(item.route!);
               }
             },
             shape: RoundedRectangleBorder(
