@@ -25,19 +25,13 @@ String? _resolveMenuKey(String location) {
   return null;
 }
 
-/// leaf 경로를 정규화합니다. /home 단독이면 /home/dashboard로 변환합니다.
-String _normalizeLeafRoute(String location) {
-  if (location == '/home' || location == '/home/') return '/home/dashboard';
-  return location;
-}
-
-/// 3단 전역 레이아웃: 상단 메뉴바 + 좌측 서브메뉴 + 본문 콘텐츠.
+/// 3단 전역 레이아웃: 상단 메뉴바 + 좌측 서브메뉴 + 본문 콘텐츠
 ///
-/// 본문 영역은 GoRouter의 child Navigator 대신 [selectedLeafRouteProvider]를
-/// watch하여 직접 페이지 위젯을 렌더링합니다.
-/// → GoRouter 17.x에서 ShellRoute child 업데이트가 보장되지 않는 문제 해결.
+/// GoRouter ShellRoute의 child(Navigator)를 본문에 직접 렌더링합니다.
+/// URL 변경 시 GoRouter가 child를 업데이트하고 AppLayout이 rebuild됩니다.
 class AppLayout extends ConsumerStatefulWidget {
-  const AppLayout({super.key});
+  final Widget child;
+  const AppLayout({super.key, required this.child});
 
   @override
   ConsumerState<AppLayout> createState() => _AppLayoutState();
@@ -49,24 +43,17 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // URL 변경 시 selectedMenuProvider 동기화 (딥링크 지원)
     final location = GoRouterState.of(context).uri.toString();
     if (location == _lastSyncedLocation) return;
     _lastSyncedLocation = location;
 
-    // 1단계 메뉴 키 동기화
     final resolvedKey = _resolveMenuKey(location);
-    if (resolvedKey != null) {
-      final currentMenu = ref.read(selectedMenuProvider);
-      if (resolvedKey != currentMenu) {
-        ref.read(selectedMenuProvider.notifier).select(resolvedKey);
-      }
-    }
+    if (resolvedKey == null) return;
 
-    // leaf 라우트 동기화 (딥링크 지원)
-    final normalizedRoute = _normalizeLeafRoute(location);
-    final currentLeaf = ref.read(selectedLeafRouteProvider);
-    if (normalizedRoute != currentLeaf) {
-      ref.read(selectedLeafRouteProvider.notifier).setRoute(normalizedRoute);
+    final currentMenu = ref.read(selectedMenuProvider);
+    if (resolvedKey != currentMenu) {
+      ref.read(selectedMenuProvider.notifier).select(resolvedKey);
     }
   }
 
@@ -74,9 +61,6 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
   Widget build(BuildContext context) {
     final submenu = ref.watch(submenuProvider);
     final hasSubmenu = submenu != null && submenu.isNotEmpty;
-
-    // GoRouter Navigator 대신 provider로 본문 페이지 결정
-    final leafRoute = ref.watch(selectedLeafRouteProvider);
 
     return Scaffold(
       appBar: const PreferredSize(
@@ -93,17 +77,11 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
               thickness: 1,
               color: AppColors.menuBorder,
             ),
+          // GoRouter ShellRoute가 전달한 Navigator를 그대로 렌더링
           Expanded(
             child: Container(
               color: AppColors.background,
-              // AnimatedSwitcher로 페이드 전환 효과 적용
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: KeyedSubtree(
-                  key: ValueKey(leafRoute),
-                  child: buildPageForRoute(leafRoute),
-                ),
-              ),
+              child: widget.child,
             ),
           ),
         ],
@@ -142,62 +120,13 @@ class TopMenuBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.s3),
-          _buildNavBtn(
-            context,
-            ref,
-            'home',
-            '홈',
-            selectedMenu,
-            '/home/dashboard',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'avatar',
-            '내 아바타',
-            selectedMenu,
-            '/home/avatar',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'wardrobe',
-            '내 옷장',
-            selectedMenu,
-            '/home/wardrobe/all',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'house',
-            '나의 집',
-            selectedMenu,
-            '/home/house/structure',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'weather',
-            '날씨',
-            selectedMenu,
-            '/home/weather/today',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'community',
-            '커뮤니티',
-            selectedMenu,
-            '/home/community',
-          ),
-          _buildNavBtn(
-            context,
-            ref,
-            'settings',
-            '설정',
-            selectedMenu,
-            '/home/settings/profile',
-          ),
+          _buildNavBtn(context, ref, 'home', '홈', selectedMenu, '/home/dashboard'),
+          _buildNavBtn(context, ref, 'avatar', '내 아바타', selectedMenu, '/home/avatar'),
+          _buildNavBtn(context, ref, 'wardrobe', '내 옷장', selectedMenu, '/home/wardrobe/all'),
+          _buildNavBtn(context, ref, 'house', '나의 집', selectedMenu, '/home/house/structure'),
+          _buildNavBtn(context, ref, 'weather', '날씨', selectedMenu, '/home/weather/today'),
+          _buildNavBtn(context, ref, 'community', '커뮤니티', selectedMenu, '/home/community'),
+          _buildNavBtn(context, ref, 'settings', '설정', selectedMenu, '/home/settings/profile'),
         ],
       ),
       actions: [
@@ -224,29 +153,21 @@ class TopMenuBar extends ConsumerWidget {
   ) {
     final isSelected = id == selected;
     return TextButton(
-      style:
-          TextButton.styleFrom(
-            foregroundColor: isSelected ? Colors.white : AppColors.menuText,
-            backgroundColor: isSelected
-                ? AppColors.menuSelected
-                : Colors.transparent,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s1,
-              vertical: AppSpacing.s1,
-            ),
-          ).copyWith(
-            overlayColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.hovered)
-                  ? AppColors.menuHover
-                  : null,
-            ),
-          ),
+      style: TextButton.styleFrom(
+        foregroundColor: isSelected ? Colors.white : AppColors.menuText,
+        backgroundColor: isSelected ? AppColors.menuSelected : Colors.transparent,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s1,
+          vertical: AppSpacing.s1,
+        ),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.hovered) ? AppColors.menuHover : null,
+        ),
+      ),
       onPressed: () {
-        // 1단계 메뉴 상태 업데이트
         ref.read(selectedMenuProvider.notifier).select(id);
-        // 본문 페이지 즉시 전환 (provider 기반)
-        ref.read(selectedLeafRouteProvider.notifier).setRoute(defaultRoute);
-        // URL 동기화
         context.go(defaultRoute);
       },
       child: Text(label),
@@ -261,6 +182,7 @@ class SideMenuPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final submenu = ref.watch(submenuProvider);
+    final currentLocation = GoRouterState.of(context).uri.toString();
 
     if (submenu == null || submenu.isEmpty) {
       return const SizedBox.shrink();
@@ -274,29 +196,26 @@ class SideMenuPanel extends ConsumerWidget {
         itemCount: submenu.length,
         itemBuilder: (context, index) {
           final item = submenu[index];
+          final isActive = item.route != null && currentLocation == item.route;
           return ListTile(
             title: Text(
               item.label,
-              style: const TextStyle(color: AppColors.menuText, fontSize: 14),
+              style: TextStyle(
+                color: isActive ? Colors.white : AppColors.menuText,
+                fontSize: 14,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
+            tileColor: isActive ? AppColors.menuSelected : null,
             hoverColor: AppColors.menuHover,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s2,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
             dense: true,
             onTap: () {
               if (item.route != null) {
-                // 본문 페이지 즉시 전환 (provider 기반) — GoRouter Navigator 불필요
-                ref
-                    .read(selectedLeafRouteProvider.notifier)
-                    .setRoute(item.route!);
-                // URL 동기화 (딥링크/브라우저 히스토리)
                 context.go(item.route!);
               }
             },
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           );
         },
       ),

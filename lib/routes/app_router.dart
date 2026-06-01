@@ -49,7 +49,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {
-          return const AppLayout();
+          return AppLayout(child: child);
         },
         routes: [
           GoRoute(
