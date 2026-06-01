@@ -83,6 +83,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
               GoRoute(
+                path: 'avatar/guide',
+                pageBuilder: (context, state) => _fadeTransition(
+                  context: context,
+                  state: state,
+                  child: const AvatarGuidePage(),
+                ),
+              ),
+              GoRoute(
+                path: 'avatar/result',
+                pageBuilder: (context, state) {
+                  final avatarUrl = (state.extra as String?) ?? '';
+                  return _fadeTransition(
+                    context: context,
+                    state: state,
+                    child: AvatarResultPage(avatarImageUrl: avatarUrl),
+                  );
+                },
+              ),
+              GoRoute(
                 path: 'community',
                 pageBuilder: (context, state) => _fadeTransition(
                   context: context,

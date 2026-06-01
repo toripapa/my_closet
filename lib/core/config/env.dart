@@ -9,4 +9,11 @@ class Env {
     'MOCK_USER_PW',
     defaultValue: '1234',
   );
+
+  /// my_closet_server 베이스 URL
+  /// 실제 배포 환경에서는 --dart-define=AVATAR_SERVER_URL=https://your-server.com 으로 주입
+  static const String avatarServerBaseUrl = String.fromEnvironment(
+    'AVATAR_SERVER_URL',
+    defaultValue: 'http://localhost:8000',
+  );
 }

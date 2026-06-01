@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>아바타 생성을 위해 카메라로 본인 사진을 촬영합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>아바타 등록을 위해 사진 라이브러리에 접근합니다.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

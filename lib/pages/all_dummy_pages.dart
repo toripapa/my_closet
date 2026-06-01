@@ -2,6 +2,8 @@
 // app_router.dart 등에서 단일 import로 모든 페이지에 접근 가능
 export 'dashboard/dashboard_page.dart';
 export 'avatar/avatar_page.dart';
+export 'avatar/avatar_guide_page.dart';
+export 'avatar/avatar_result_page.dart';
 export 'wardrobe/wardrobe_all_page.dart';
 export 'wardrobe/wardrobe_recent_page.dart';
 export 'wardrobe/wardrobe_manage_page.dart';
