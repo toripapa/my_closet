@@ -31,7 +31,10 @@ class HouseFurniturePage extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 '총 ${_categories.fold(0, (sum, c) => sum + c.$3)}개 항목',
-                style: const TextStyle(fontSize: 13, color: AppColors.textAccent),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textAccent,
+                ),
               ),
             ],
           ),
@@ -40,7 +43,7 @@ class HouseFurniturePage extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: _categories.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final cat = _categories[i];
               return ListTile(
@@ -51,20 +54,32 @@ class HouseFurniturePage extends StatelessWidget {
                   ),
                   child: Icon(cat.$2, size: 24),
                 ),
-                title: Text(cat.$1, style: const TextStyle(fontWeight: FontWeight.w500)),
+                title: Text(
+                  cat.$1,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.hover,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text('${cat.$3}개', style: const TextStyle(fontSize: 12)),
+                      child: Text(
+                        '${cat.$3}개',
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.chevron_right, color: AppColors.textAccent),
+                    const Icon(
+                      Icons.chevron_right,
+                      color: AppColors.textAccent,
+                    ),
                   ],
                 ),
               );
@@ -75,4 +90,3 @@ class HouseFurniturePage extends StatelessWidget {
     );
   }
 }
-

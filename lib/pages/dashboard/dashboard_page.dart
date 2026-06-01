@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// 홈 대시보드 페이지
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(authProvider).userId ?? '사용자';
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.s3),
       child: Column(
@@ -24,19 +27,13 @@ class DashboardPage extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '안녕하세요, gagamel님',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Text(
+                    '안녕하세요, $userId님',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '오늘도 스타일리시한 하루 보내세요',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textAccent,
-                    ),
+                    style: TextStyle(fontSize: 13, color: AppColors.textAccent),
                   ),
                 ],
               ),
@@ -52,11 +49,26 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.s2),
           Row(
             children: [
-              _StatCard(icon: Icons.checkroom, label: '내 옷장', value: '24개', color: Colors.black),
+              _StatCard(
+                icon: Icons.checkroom,
+                label: '내 옷장',
+                value: '24개',
+                color: Colors.black,
+              ),
               const SizedBox(width: AppSpacing.s2),
-              _StatCard(icon: Icons.home, label: '가구', value: '12개', color: Colors.black),
+              _StatCard(
+                icon: Icons.home,
+                label: '가구',
+                value: '12개',
+                color: Colors.black,
+              ),
               const SizedBox(width: AppSpacing.s2),
-              _StatCard(icon: Icons.wb_sunny, label: '오늘 날씨', value: '24°C', color: Colors.black),
+              _StatCard(
+                icon: Icons.wb_sunny,
+                label: '오늘 날씨',
+                value: '24°C',
+                color: Colors.black,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.s4),
@@ -107,9 +119,7 @@ class _StatCard extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.s2),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.divider),
-        ),
+        decoration: BoxDecoration(border: Border.all(color: AppColors.divider)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -117,17 +127,11 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.s1),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textAccent,
-              ),
+              style: const TextStyle(fontSize: 12, color: AppColors.textAccent),
             ),
           ],
         ),
@@ -145,9 +149,7 @@ class _QuickMenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.divider),
-      ),
+      decoration: BoxDecoration(border: Border.all(color: AppColors.divider)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -159,4 +161,3 @@ class _QuickMenuCard extends StatelessWidget {
     );
   }
 }
-

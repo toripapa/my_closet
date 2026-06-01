@@ -34,7 +34,10 @@ class CommunityPage extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textMain,
                   side: const BorderSide(color: AppColors.border),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                 ),
               ),
             ],
@@ -46,7 +49,8 @@ class CommunityPage extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: _posts.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, thickness: 4, color: AppColors.hover),
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, thickness: 4, color: AppColors.hover),
             itemBuilder: (context, i) {
               final post = _posts[i];
               return Padding(
@@ -62,32 +66,76 @@ class CommunityPage extends StatelessWidget {
                           backgroundColor: AppColors.textAccent,
                           child: Text(
                             post.$1[0],
-                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(post.$1, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text(
+                          post.$1,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const Spacer(),
-                        const Text('방금 전', style: TextStyle(fontSize: 11, color: AppColors.textAccent)),
+                        const Text(
+                          '방금 전',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textAccent,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.s1),
                     // 제목
-                    Text(post.$2, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      post.$2,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     // 본문
-                    Text(post.$3, style: const TextStyle(fontSize: 13, color: AppColors.textAccent)),
+                    Text(
+                      post.$3,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textAccent,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.s1),
                     // 좋아요/댓글
                     Row(
                       children: [
-                        Icon(Icons.favorite_border, size: 16, color: AppColors.textAccent),
+                        Icon(
+                          Icons.favorite_border,
+                          size: 16,
+                          color: AppColors.textAccent,
+                        ),
                         const SizedBox(width: 4),
-                        Text('${post.$4}', style: const TextStyle(fontSize: 12, color: AppColors.textAccent)),
+                        Text(
+                          '${post.$4}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textAccent,
+                          ),
+                        ),
                         const SizedBox(width: AppSpacing.s2),
-                        Icon(Icons.chat_bubble_outline, size: 16, color: AppColors.textAccent),
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 16,
+                          color: AppColors.textAccent,
+                        ),
                         const SizedBox(width: 4),
-                        Text('${post.$5}', style: const TextStyle(fontSize: 12, color: AppColors.textAccent)),
+                        Text(
+                          '${post.$5}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textAccent,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -100,4 +148,3 @@ class CommunityPage extends StatelessWidget {
     );
   }
 }
-

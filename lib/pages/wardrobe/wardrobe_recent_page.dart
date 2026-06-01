@@ -43,7 +43,7 @@ class WardrobeRecentPage extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: _items.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final item = _items[i];
               return ListTile(
@@ -53,7 +53,11 @@ class WardrobeRecentPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.divider),
                   ),
-                  child: const Icon(Icons.checkroom, size: 28, color: AppColors.textAccent),
+                  child: const Icon(
+                    Icons.checkroom,
+                    size: 28,
+                    color: AppColors.textAccent,
+                  ),
                 ),
                 title: Text(
                   item.$1,
@@ -61,11 +65,17 @@ class WardrobeRecentPage extends StatelessWidget {
                 ),
                 subtitle: Text(
                   item.$2,
-                  style: const TextStyle(fontSize: 12, color: AppColors.textAccent),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textAccent,
+                  ),
                 ),
                 trailing: Text(
                   item.$3,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textAccent),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textAccent,
+                  ),
                 ),
               );
             },
@@ -75,4 +85,3 @@ class WardrobeRecentPage extends StatelessWidget {
     );
   }
 }
-

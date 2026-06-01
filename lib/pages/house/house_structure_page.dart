@@ -30,7 +30,10 @@ class HouseStructurePage extends StatelessWidget {
               const Spacer(),
               Text(
                 '총 ${_rooms.length}개 공간',
-                style: const TextStyle(fontSize: 13, color: AppColors.textAccent),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textAccent,
+                ),
               ),
             ],
           ),
@@ -63,10 +66,16 @@ class HouseStructurePage extends StatelessWidget {
                     children: [
                       Icon(room.$2, size: 36, color: AppColors.textAccent),
                       const SizedBox(height: 8),
-                      Text(room.$1, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text(
+                        room.$1,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       Text(
                         room.$3,
-                        style: const TextStyle(fontSize: 11, color: AppColors.textAccent),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textAccent,
+                        ),
                       ),
                     ],
                   ),
@@ -79,4 +88,3 @@ class HouseStructurePage extends StatelessWidget {
     );
   }
 }
-

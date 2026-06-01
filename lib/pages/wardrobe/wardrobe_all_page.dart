@@ -24,6 +24,10 @@ class _WardrobeAllPageState extends State<WardrobeAllPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredItems = _selectedCategory == '전체'
+        ? _items
+        : _items.where((item) => item.$2 == _selectedCategory).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,46 +78,53 @@ class _WardrobeAllPageState extends State<WardrobeAllPage> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: AppSpacing.s2,
-                mainAxisSpacing: AppSpacing.s2,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: _items.length,
-              itemBuilder: (context, i) {
-                final item = _items[i];
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.divider),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(item.$3, size: 40, color: AppColors.textAccent),
-                      const SizedBox(height: 8),
-                      Text(
-                        item.$1,
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        item.$2,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textAccent,
+            child: filteredItems.isEmpty
+                ? const Center(
+                    child: Text(
+                      '해당 카테고리에 등록된 옷이 없습니다.',
+                      style: TextStyle(color: AppColors.textAccent),
+                    ),
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: AppSpacing.s2,
+                      mainAxisSpacing: AppSpacing.s2,
+                      childAspectRatio: 0.8,
+                    ),
+                    itemCount: filteredItems.length,
+                    itemBuilder: (context, i) {
+                      final item = filteredItems[i];
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.divider),
                         ),
-                      ),
-                    ],
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(item.$3, size: 40, color: AppColors.textAccent),
+                            const SizedBox(height: 8),
+                            Text(
+                              item.$1,
+                              style: const TextStyle(fontSize: 12),
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              item.$2,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ),
       ],
     );
   }
 }
-

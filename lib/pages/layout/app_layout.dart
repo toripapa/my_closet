@@ -53,7 +53,12 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
 
     final currentMenu = ref.read(selectedMenuProvider);
     if (resolvedKey != currentMenu) {
-      ref.read(selectedMenuProvider.notifier).select(resolvedKey);
+      // 빌드 사이클 중 provider 수정 금지(Riverpod 규칙) → 프레임 완료 후 실행
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(selectedMenuProvider.notifier).select(resolvedKey);
+        }
+      });
     }
   }
 
@@ -79,10 +84,7 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
             ),
           // GoRouter ShellRoute가 전달한 Navigator를 그대로 렌더링
           Expanded(
-            child: Container(
-              color: AppColors.background,
-              child: widget.child,
-            ),
+            child: Container(color: AppColors.background, child: widget.child),
           ),
         ],
       ),
@@ -93,6 +95,16 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
 /// 상단 메뉴바: 타이틀 + 1단계 메뉴 버튼(좌측 Row) + 로그아웃(우측 actions)
 class TopMenuBar extends ConsumerWidget {
   const TopMenuBar({super.key});
+
+  static const _navItems = [
+    ('home', '홈', '/home/dashboard'),
+    ('avatar', '내 아바타', '/home/avatar'),
+    ('wardrobe', '내 옷장', '/home/wardrobe/all'),
+    ('house', '나의 집', '/home/house/structure'),
+    ('weather', '날씨', '/home/weather/today'),
+    ('community', '커뮤니티', '/home/community'),
+    ('settings', '설정', '/home/settings/profile'),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -120,13 +132,16 @@ class TopMenuBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.s3),
-          _buildNavBtn(context, ref, 'home', '홈', selectedMenu, '/home/dashboard'),
-          _buildNavBtn(context, ref, 'avatar', '내 아바타', selectedMenu, '/home/avatar'),
-          _buildNavBtn(context, ref, 'wardrobe', '내 옷장', selectedMenu, '/home/wardrobe/all'),
-          _buildNavBtn(context, ref, 'house', '나의 집', selectedMenu, '/home/house/structure'),
-          _buildNavBtn(context, ref, 'weather', '날씨', selectedMenu, '/home/weather/today'),
-          _buildNavBtn(context, ref, 'community', '커뮤니티', selectedMenu, '/home/community'),
-          _buildNavBtn(context, ref, 'settings', '설정', selectedMenu, '/home/settings/profile'),
+          ..._navItems.map(
+            (item) => _buildNavBtn(
+              context,
+              ref,
+              item.$1,
+              item.$2,
+              selectedMenu,
+              item.$3,
+            ),
+          ),
         ],
       ),
       actions: [
@@ -153,19 +168,23 @@ class TopMenuBar extends ConsumerWidget {
   ) {
     final isSelected = id == selected;
     return TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: isSelected ? Colors.white : AppColors.menuText,
-        backgroundColor: isSelected ? AppColors.menuSelected : Colors.transparent,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s1,
-          vertical: AppSpacing.s1,
-        ),
-      ).copyWith(
-        overlayColor: WidgetStateProperty.resolveWith(
-          (states) =>
-              states.contains(WidgetState.hovered) ? AppColors.menuHover : null,
-        ),
-      ),
+      style:
+          TextButton.styleFrom(
+            foregroundColor: isSelected ? Colors.white : AppColors.menuText,
+            backgroundColor: isSelected
+                ? AppColors.menuSelected
+                : Colors.transparent,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s1,
+              vertical: AppSpacing.s1,
+            ),
+          ).copyWith(
+            overlayColor: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.hovered)
+                  ? AppColors.menuHover
+                  : null,
+            ),
+          ),
       onPressed: () {
         ref.read(selectedMenuProvider.notifier).select(id);
         context.go(defaultRoute);
@@ -208,14 +227,18 @@ class SideMenuPanel extends ConsumerWidget {
             ),
             tileColor: isActive ? AppColors.menuSelected : null,
             hoverColor: AppColors.menuHover,
-            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s2,
+            ),
             dense: true,
             onTap: () {
               if (item.route != null) {
                 context.go(item.route!);
               }
             },
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
           );
         },
       ),

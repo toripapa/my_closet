@@ -41,7 +41,7 @@ class WeatherWeekPage extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: _forecast.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final day = _forecast[i];
               final isToday = i == 0;
@@ -58,7 +58,9 @@ class WeatherWeekPage extends StatelessWidget {
                       child: Text(
                         day.$1,
                         style: TextStyle(
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isToday
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           fontSize: 15,
                         ),
                       ),
@@ -66,7 +68,10 @@ class WeatherWeekPage extends StatelessWidget {
                     if (isToday)
                       Container(
                         margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.textMain,
                           borderRadius: BorderRadius.circular(8),
@@ -80,16 +85,25 @@ class WeatherWeekPage extends StatelessWidget {
                       const SizedBox(width: 42),
                     Icon(day.$3, size: 24),
                     const SizedBox(width: AppSpacing.s2),
-                    Text(day.$2, style: const TextStyle(color: AppColors.textAccent)),
+                    Text(
+                      day.$2,
+                      style: const TextStyle(color: AppColors.textAccent),
+                    ),
                     const Spacer(),
                     Text(
                       day.$4,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(width: AppSpacing.s2),
                     Text(
                       day.$5,
-                      style: const TextStyle(color: AppColors.textAccent, fontSize: 14),
+                      style: const TextStyle(
+                        color: AppColors.textAccent,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -101,4 +115,3 @@ class WeatherWeekPage extends StatelessWidget {
     );
   }
 }
-

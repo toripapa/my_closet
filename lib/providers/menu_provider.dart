@@ -16,4 +16,3 @@ final submenuProvider = Provider<List<MenuItem>?>((ref) {
   final selected = ref.watch(selectedMenuProvider);
   return menuMap[selected];
 });
-

@@ -7,10 +7,16 @@ import '../pages/auth/login_page.dart';
 import '../pages/layout/app_layout.dart';
 import '../pages/all_dummy_pages.dart';
 
-// [Harness] 3. 미완성 텍스트 남기지 않고 온전한 위젯 구성 완결
-
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
+/// authProvider 상태 변화를 GoRouter에 전달하는 ChangeNotifier.
+/// refreshListenable로 등록하면 인증 상태가 바뀔 때마다 redirect가 재평가됩니다.
+class _RouterNotifier extends ChangeNotifier {
+  _RouterNotifier(Ref ref) {
+    ref.listen<AuthState>(authProvider, (_, _) => notifyListeners());
+  }
+}
 
 /// 페이드 전환 애니메이션 빌더 (본문 영역 페이지 전환에 사용)
 CustomTransitionPage<void> _fadeTransition({
@@ -32,6 +38,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/home/dashboard',
+    refreshListenable: _RouterNotifier(ref),
     redirect: (context, state) {
       final isAuth = ref.read(authProvider).isAuthenticated;
       final isGoingToLogin = state.fullPath == '/login';
@@ -54,7 +61,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/home',
-            redirect: (context, state) => '/home/dashboard',
+            redirect: (context, state) =>
+                state.uri.path == '/home' || state.uri.path == '/home/'
+                    ? '/home/dashboard'
+                    : null,
             routes: [
               GoRoute(
                 path: 'dashboard',

@@ -6,7 +6,8 @@ class SettingsNotificationPage extends StatefulWidget {
   const SettingsNotificationPage({super.key});
 
   @override
-  State<SettingsNotificationPage> createState() => _SettingsNotificationPageState();
+  State<SettingsNotificationPage> createState() =>
+      _SettingsNotificationPageState();
 }
 
 class _SettingsNotificationPageState extends State<SettingsNotificationPage> {
@@ -51,7 +52,7 @@ class _SettingsNotificationPageState extends State<SettingsNotificationPage> {
                     SwitchListTile(
                       title: Text(entry.key),
                       value: entry.value,
-                      activeColor: AppColors.textMain,
+                      activeThumbColor: AppColors.textMain,
                       onChanged: (val) {
                         setState(() => _settings[entry.key] = val);
                       },
@@ -67,4 +68,3 @@ class _SettingsNotificationPageState extends State<SettingsNotificationPage> {
     );
   }
 }
-

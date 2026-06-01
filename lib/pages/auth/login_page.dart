@@ -15,11 +15,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _idController = TextEditingController();
   final _pwController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _pwFocusNode = FocusNode();
 
   @override
   void dispose() {
     _idController.dispose();
     _pwController.dispose();
+    _pwFocusNode.dispose();
     super.dispose();
   }
 
@@ -66,6 +68,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextFormField(
                   controller: _idController,
                   decoration: const InputDecoration(labelText: '아이디'),
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (_) =>
+                      FocusScope.of(context).requestFocus(_pwFocusNode),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return '아이디를 입력해주세요.';
@@ -76,8 +81,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: AppSpacing.s2),
                 TextFormField(
                   controller: _pwController,
+                  focusNode: _pwFocusNode,
                   decoration: const InputDecoration(labelText: '비밀번호'),
                   obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _login(),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return '비밀번호를 입력해주세요.';

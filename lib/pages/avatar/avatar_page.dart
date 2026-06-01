@@ -84,9 +84,7 @@ class AvatarPage extends StatelessWidget {
           Wrap(
             spacing: AppSpacing.s1,
             runSpacing: AppSpacing.s1,
-            children: [
-              '캐주얼', '미니멀', '스트리트', '포멀', '스포티',
-            ]
+            children: ['캐주얼', '미니멀', '스트리트', '포멀', '스포티']
                 .map(
                   (tag) => Chip(
                     label: Text(tag, style: const TextStyle(fontSize: 12)),
@@ -121,4 +119,3 @@ class _BodyInfoTile extends StatelessWidget {
     );
   }
 }
-

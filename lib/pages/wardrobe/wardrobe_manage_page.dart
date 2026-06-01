@@ -26,7 +26,11 @@ class WardrobeManagePage extends StatelessWidget {
           // 요약 카드
           Row(
             children: [
-              _SummaryCard(label: '세탁 필요', count: 3, icon: Icons.local_laundry_service),
+              _SummaryCard(
+                label: '세탁 필요',
+                count: 3,
+                icon: Icons.local_laundry_service,
+              ),
               const SizedBox(width: AppSpacing.s2),
               _SummaryCard(label: '수선 필요', count: 1, icon: Icons.build),
               const SizedBox(width: AppSpacing.s2),
@@ -36,7 +40,11 @@ class WardrobeManagePage extends StatelessWidget {
           const SizedBox(height: AppSpacing.s3),
 
           // 세탁 필요 항목
-          _SectionHeader(title: '세탁 필요', icon: Icons.local_laundry_service, count: 3),
+          _SectionHeader(
+            title: '세탁 필요',
+            icon: Icons.local_laundry_service,
+            count: 3,
+          ),
           const SizedBox(height: AppSpacing.s1),
           _ManageItem('블랙 코트', '드라이클리닝 필요'),
           _ManageItem('화이트 셔츠', '손세탁 권장'),
@@ -57,7 +65,11 @@ class _SummaryCard extends StatelessWidget {
   final String label;
   final int count;
   final IconData icon;
-  const _SummaryCard({required this.label, required this.count, required this.icon});
+  const _SummaryCard({
+    required this.label,
+    required this.count,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +81,14 @@ class _SummaryCard extends StatelessWidget {
           children: [
             Icon(icon, size: 20),
             const SizedBox(height: 4),
-            Text('$count개', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textAccent)),
+            Text(
+              '$count개',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 11, color: AppColors.textAccent),
+            ),
           ],
         ),
       ),
@@ -82,7 +100,11 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final IconData icon;
   final int count;
-  const _SectionHeader({required this.title, required this.icon, required this.count});
+  const _SectionHeader({
+    required this.title,
+    required this.icon,
+    required this.count,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +120,10 @@ class _SectionHeader extends StatelessWidget {
             color: AppColors.textMain,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text('$count', style: const TextStyle(color: Colors.white, fontSize: 11)),
+          child: Text(
+            '$count',
+            style: const TextStyle(color: Colors.white, fontSize: 11),
+          ),
         ),
       ],
     );
@@ -115,9 +140,7 @@ class _ManageItem extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(AppSpacing.s2),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.divider),
-      ),
+      decoration: BoxDecoration(border: Border.all(color: AppColors.divider)),
       child: Row(
         children: [
           const Icon(Icons.checkroom, size: 20, color: AppColors.textAccent),
@@ -127,7 +150,13 @@ class _ManageItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                Text(note, style: const TextStyle(fontSize: 12, color: AppColors.textAccent)),
+                Text(
+                  note,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textAccent,
+                  ),
+                ),
               ],
             ),
           ),
@@ -136,4 +165,3 @@ class _ManageItem extends StatelessWidget {
     );
   }
 }
-
