@@ -8,7 +8,6 @@ import '../../theme/app_theme.dart';
 // [Harness] 3. 미완성 텍스트 남기지 않고 온전한 위젯 구성 완결
 
 /// 현재 URL에서 1단계 메뉴 키를 추론합니다.
-/// 예) /home/weather/today → 'weather', /home/avatar → 'avatar'
 String? _resolveMenuKey(String location) {
   const prefixMap = {
     '/home/dashboard': 'home',
@@ -26,41 +25,48 @@ String? _resolveMenuKey(String location) {
   return null;
 }
 
-/// 3단 전역 레이아웃: 상단 메뉴바 + 좌측 서브메뉴 + 본문 콘텐츠
+/// leaf 경로를 정규화합니다. /home 단독이면 /home/dashboard로 변환합니다.
+String _normalizeLeafRoute(String location) {
+  if (location == '/home' || location == '/home/') return '/home/dashboard';
+  return location;
+}
+
+/// 3단 전역 레이아웃: 상단 메뉴바 + 좌측 서브메뉴 + 본문 콘텐츠.
 ///
-/// ConsumerStatefulWidget을 사용하여 URL 변경 시 selectedMenuProvider를
-/// didChangeDependencies에서 안전하게 동기화합니다.
-/// (ConsumerWidget의 build 내 addPostFrameCallback 방식은 레이스 컨디션 유발)
+/// 본문 영역은 GoRouter의 child Navigator 대신 [selectedLeafRouteProvider]를
+/// watch하여 직접 페이지 위젯을 렌더링합니다.
+/// → GoRouter 17.x에서 ShellRoute child 업데이트가 보장되지 않는 문제 해결.
 class AppLayout extends ConsumerStatefulWidget {
-  final Widget child;
-  const AppLayout({super.key, required this.child});
+  const AppLayout({super.key});
 
   @override
   ConsumerState<AppLayout> createState() => _AppLayoutState();
 }
 
 class _AppLayoutState extends ConsumerState<AppLayout> {
-  /// 마지막으로 동기화된 URL — 중복 동기화 방지용
   String? _lastSyncedLocation;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // GoRouterState가 변경(URL 변경)될 때만 호출됨
     final location = GoRouterState.of(context).uri.toString();
-
-    // 같은 위치면 이미 동기화됨 — 중복 처리 방지
     if (location == _lastSyncedLocation) return;
     _lastSyncedLocation = location;
 
+    // 1단계 메뉴 키 동기화
     final resolvedKey = _resolveMenuKey(location);
-    if (resolvedKey == null) return;
+    if (resolvedKey != null) {
+      final currentMenu = ref.read(selectedMenuProvider);
+      if (resolvedKey != currentMenu) {
+        ref.read(selectedMenuProvider.notifier).select(resolvedKey);
+      }
+    }
 
-    // selectedMenuProvider와 불일치할 때만 동기화
-    // (대부분의 경우 메뉴 버튼 클릭 시 이미 select()가 호출되어 일치함 → 노옵)
-    final currentMenu = ref.read(selectedMenuProvider);
-    if (resolvedKey != currentMenu) {
-      ref.read(selectedMenuProvider.notifier).select(resolvedKey);
+    // leaf 라우트 동기화 (딥링크 지원)
+    final normalizedRoute = _normalizeLeafRoute(location);
+    final currentLeaf = ref.read(selectedLeafRouteProvider);
+    if (normalizedRoute != currentLeaf) {
+      ref.read(selectedLeafRouteProvider.notifier).setRoute(normalizedRoute);
     }
   }
 
@@ -68,6 +74,9 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
   Widget build(BuildContext context) {
     final submenu = ref.watch(submenuProvider);
     final hasSubmenu = submenu != null && submenu.isNotEmpty;
+
+    // GoRouter Navigator 대신 provider로 본문 페이지 결정
+    final leafRoute = ref.watch(selectedLeafRouteProvider);
 
     return Scaffold(
       appBar: const PreferredSize(
@@ -78,7 +87,6 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SideMenuPanel(),
-          // 서브메뉴가 있을 때만 우측 구분선 표시
           if (hasSubmenu)
             const VerticalDivider(
               width: 1,
@@ -86,7 +94,17 @@ class _AppLayoutState extends ConsumerState<AppLayout> {
               color: AppColors.menuBorder,
             ),
           Expanded(
-            child: Container(color: AppColors.background, child: widget.child),
+            child: Container(
+              color: AppColors.background,
+              // AnimatedSwitcher로 페이드 전환 효과 적용
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: KeyedSubtree(
+                  key: ValueKey(leafRoute),
+                  child: buildPageForRoute(leafRoute),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -107,7 +125,6 @@ class TopMenuBar extends ConsumerWidget {
       foregroundColor: AppColors.menuText,
       elevation: 0,
       titleSpacing: 0,
-      // AppBar 하단 구분선 — TopMenuBar와 본문 영역의 경계 명확화
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(height: 1, color: AppColors.menuBorder),
@@ -225,7 +242,11 @@ class TopMenuBar extends ConsumerWidget {
             ),
           ),
       onPressed: () {
+        // 1단계 메뉴 상태 업데이트
         ref.read(selectedMenuProvider.notifier).select(id);
+        // 본문 페이지 즉시 전환 (provider 기반)
+        ref.read(selectedLeafRouteProvider.notifier).setRoute(defaultRoute);
+        // URL 동기화
         context.go(defaultRoute);
       },
       child: Text(label),
@@ -234,7 +255,6 @@ class TopMenuBar extends ConsumerWidget {
 }
 
 /// 좌측 서브메뉴 패널: 선택된 1단계 메뉴에 따라 동적 표시
-/// submenu가 null이면 SizedBox.shrink()로 숨김
 class SideMenuPanel extends ConsumerWidget {
   const SideMenuPanel({super.key});
 
@@ -248,7 +268,6 @@ class SideMenuPanel extends ConsumerWidget {
 
     return Container(
       width: 200,
-      // SideMenuPanel 전용 배경색 — TopMenuBar와 시각적으로 구분
       color: AppColors.sideBackground,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s1),
@@ -266,8 +285,12 @@ class SideMenuPanel extends ConsumerWidget {
             ),
             dense: true,
             onTap: () {
-              // item.route는 전체 경로(/home/weather/today) — 직접 go() 호출
               if (item.route != null) {
+                // 본문 페이지 즉시 전환 (provider 기반) — GoRouter Navigator 불필요
+                ref
+                    .read(selectedLeafRouteProvider.notifier)
+                    .setRoute(item.route!);
+                // URL 동기화 (딥링크/브라우저 히스토리)
                 context.go(item.route!);
               }
             },
